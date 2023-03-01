@@ -29,10 +29,11 @@ data = inner_join(d, ratings, by = "tconst")
 data = inner_join(data, crew, by = "tconst")
 ```
 
-Start on descriptive data analysis
+===Start on descriptive data analysis===
+First, we find out the average rating for a movie
 ```{r}
 # histogram of ratings
-ggplot(ratings, aes(x=averageRating)) + geom_histogram(fill="white", color="black")
+ggplot(ratings, aes(x=averageRating)) + geom_histogram(fill="white", color="black") + scale_x_continuous(name="rating", breaks=c(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10))
 
 ```
 Include "questions" we asked
