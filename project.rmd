@@ -10,24 +10,23 @@ First, read the dataset and clean it
 # this will have problems
 d = read_delim("./../title_basics.tsv")
 
-
 # so we drop incomplete rows to make it not
 d = drop_na(d, genres)
 ```
-```{r}
+```{r echo=False}
+# this should not have problems
 ratings = read_tsv("./../title_ratings.tsv")
 ```
 
 here for testing purposes
 ```{r}
-problems(d)
+problems(ratings)
 ```
 
 Start on descriptive data analysis
 ```{r}
 # histogram of ratings
-ggplot(d) + geom_histogram()
-
+ggplot(ratings, aes(x=averageRating)) + geom_histogram(fill="white", color="black")
 
 ```
 Include "questions" we asked
