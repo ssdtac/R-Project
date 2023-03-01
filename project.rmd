@@ -8,10 +8,10 @@ library("ggplot2")
 First, read the dataset and clean it
 ```{r}
 # this will have problems
-d = read_delim("./title_basics.tsv")
+basics = read_delim("./title_basics.tsv")
 
 # so we drop incomplete rows to make it not
-d = drop_na(d, genres)
+basics = drop_na(basics, genres)
 ```
 ```{r echo=False}
 # this should not have problems
@@ -28,7 +28,7 @@ problems(ratings)
 
 Merging Data
 ```{r}
-data = list(d, ratings, crew)
+data = list(basics, ratings, crew)
 
 data = reduce(data, inner_join, by = 'tconst')
 ```
