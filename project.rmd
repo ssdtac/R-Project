@@ -27,7 +27,7 @@ Merging Data
 ```{r}
 data = list(d, ratings, crew)
 
-data %>% reduce(inner_join, by = 'tconst')
+data = reduce(data, inner_join, by = 'tconst')
 ```
 
 Start on descriptive data analysis
