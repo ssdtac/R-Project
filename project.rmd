@@ -5,8 +5,31 @@ library("ggplot")
 ```
 
 
+First, read the dataset and clean it
 ```{r}
 # this will have problems
-data = read_delim("./../title_basics.tsv")
+d = read_delim("./../title_basics.tsv")
+
+# so we drop rows to make it not
+d = drop_na(d, genres)
 ```
 
+here for testing purposes
+```{r}
+problems(d)
+```
+
+Start on descriptive data analysis
+```{r}
+
+
+```
+Include "questions" we asked
+
+
+
+
+Predictive data analysis w/ linear regression model
+```{r}
+
+```
