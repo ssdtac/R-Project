@@ -23,6 +23,12 @@ here for testing purposes
 problems(d)
 ```
 
+Merging Data
+```{r}
+data = inner_join(d, ratings, by = "tconst")
+data = inner_join(data, crew, by = "tconst")
+```
+
 Start on descriptive data analysis
 ```{r}
 # histogram of ratings
