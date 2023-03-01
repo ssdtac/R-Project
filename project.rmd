@@ -1,1 +1,12 @@
-yeet
+```{r}
+library("ISLR") 
+library("tidyverse") 
+library("ggplot")
+```
+
+
+```{r}
+# this will have problems
+data = read_delim("./../title_basics.tsv")
+```
+
