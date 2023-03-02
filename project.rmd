@@ -4,54 +4,95 @@ library("tidyverse")
 library("ggplot2")
 ```
 
-
 First, read the dataset and clean it
-```{r}
+
+```{r echo=FALSE}
 # this will have problems
 basics = read_delim("./title_basics.tsv")
 
 # so we drop incomplete rows to make it not
 basics = drop_na(basics, genres)
 ```
-```{r echo=False}
+
+```{r echo=FALSE, message=FALSE}
 # this should not have problems
 ratings = read_tsv("./title_ratings.tsv")
 ```
-```{r}
+
+```{r echo=FALSE}
 crew = read_tsv("./title_crew.tsv")
 ```
 
 here for testing purposes
-```{r}
+
+```{r echo=FALSE}
 problems(ratings)
 ```
 
 Merging Data
+
 ```{r}
 data = list(basics, ratings, crew)
-
-data = reduce(data, inner_join, by = 'tconst')
+#good to keep dirty data to see if it made a difference
+dirty_data = reduce(data, inner_join, by = 'tconst')
 ```
 
+```{r}
+# drop NA runtime
+data = dirty_data %>% filter(runtimeMinutes > 10)
+# drop runtime under 10 min
+```
 
-===Start on descriptive data analysis===
-First, we find out the average rating for a movie over all time
+Still has 900k elements, reduce to just movies
+
+```{r}
+data = data %>% filter(titleType == "movie")
+```
+
+Now down to 260k elements. Still kind of large, but more usable.
+
+#Start on descriptive data analysis
+
+First, we wondered what the average rating for movies overall was
+
 ```{r}
 # histogram of ratings
-ggplot(ratings, aes(x=averageRating)) + geom_histogram(fill="white", color="black") + scale_x_continuous(name="rating", breaks=seq(0, 10, 1))
+ggplot(data, aes(x=averageRating)) + geom_histogram(fill="white", color="black")+ggtitle("Distribution of Ratings") + scale_x_continuous(name="rating", breaks=seq(0, 10, 1)) + scale_y_continuous(name="Number of Movies", breaks=seq(0, 200000, 20000))
   
 ```
-As we can see, most common ratings are about 7.5
-==Now try plotting rating vs release year using a scatterplot==
+
+As we can see, most common ratings for movies are about 6.5
+
+Now try plotting year vs average rating (this might be for the regression model, not simple analysis.)
 ```{r}
-
+modern_data = data %>% filter(startYear > 1990)
 ```
-Include "questions" we asked
-
-
-
-
-Predictive data analysis w/ linear regression model
 ```{r}
-
+less = data %>% filter(runtimeMinutes < 250)
+less_modern = less %>% filter(startYear > 1990)
 ```
+```{r}
+ggplot(less_modern, aes(x=startYear, y=averageRating)) + geom_point() + scale_x_discrete(name="Release Year", breaks=seq(1892, 2023, 10))
+```
+
+As we can see, this is sort of "cone shaped" which is because of an increase in population variance over time. As times get more modern, there are simply more movies to give ratings. This causes slight problems for the progression of our analysis
+#Finding the residuals
+
+```{r}
+model = lm(averageRating~startYear, data=less)
+summary(model)
+```
+
+As we can see, the adjusted R-squared value is 0.0086, which implies that plotting these 2 variables against each other has almost no predictive validity. This makes sense if you think about it, so now we will try to find something more predictably valid.
+
+Try plotting rating against runtime
+```{r}
+ggplot(less_modern, aes(x=runtimeMinutes, y=averageRating)) + geom_point() +scale_x_discrete(breaks=seq(0,250,10))
+```
+
+```{r}
+model2 = lm(averageRating~runtimeMinutes, data=less_modern)
+summary(model2)
+```
+
+
