@@ -95,4 +95,32 @@ model2 = lm(averageRating~runtimeMinutes, data=less_modern)
 summary(model2)
 ```
 
+Add column numwriters
+```{r}
+for(ind in 1:nrow(data)){
+  test=toString(data[ind,"writers"])
+  if(test=="\\N"){
+    len=0
+  }else{
+    split1=str_split_1(test,",")
+    len=length(split1)
+  }
+  data[ind,"numwriters"]=len
+}
+```
+
+Plotting num writers/directors against rating
+```{r}
+
+```
+
+
+
+
+
+
+
+
+
+
 
