@@ -115,15 +115,6 @@ Plotting num writers/directors against rating
 ```
 
 
-
-
-
-
-
-
-
-
-=======
 ```{r}
 test = data[,9]
 test = test %>% filter(genres != "\\N")
