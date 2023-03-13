@@ -90,9 +90,23 @@ Try plotting rating against runtime
 ggplot(less_modern, aes(x=runtimeMinutes, y=averageRating)) + geom_point() +scale_x_discrete(breaks=seq(0,250,10))
 ```
 
-```{r}
+```{r message=FALSE}
 model2 = lm(averageRating~runtimeMinutes, data=less_modern)
 summary(model2)
+```
+
+```{r}
+test = data[,9]
+test = test %>% filter(genres != "\\N")
+
+split = str_split_1(toString(test), ",")
+
+split
+```
+```{r}
+data_genres <- data %>% select(tconst, genres) %>% separate_rows(genres, sep=",")
+
+data_genres
 ```
 
 
