@@ -109,9 +109,13 @@ for(ind in 1:nrow(data)){
 }
 ```
 
-Plotting num writers/directors against rating
+Plotting num writers/directors against rating (No correlation, but higher ratings on 0 writers)
 ```{r}
+numWritersData = data %>% select(averageRating, numwriters)
+gNumWritersData = numWritersData %>% group_by(numwriters)
+gSumm = gNumWritersData %>% summarise(mean_rating=mean(averageRating))
 
+ggplot(gSumm, aes(x=numwriters,y=mean_rating)) + geom_point()+ggtitle("Ratings compared with writers") + scale_x_discrete(name="Number of Writers", breaks=seq(0, 69, 1)) + scale_y_continuous(name="Average Rating", breaks=seq(0, 10, 1))
 ```
 
 
