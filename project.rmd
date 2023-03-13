@@ -95,7 +95,6 @@ model2 = lm(averageRating~runtimeMinutes, data=less_modern)
 summary(model2)
 ```
 
-<<<<<<< HEAD:projecttest.rmd
 Add column numwriters
 ```{r}
 for(ind in 1:nrow(data)){
@@ -138,6 +137,4 @@ data_genres <- data %>% select(tconst, genres) %>% separate_rows(genres, sep=","
 
 data_genres
 ```
-
->>>>>>> 978eaa3967669a7ba51825d400adf9306b9ce470:project.rmd
 
