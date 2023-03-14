@@ -1,4 +1,4 @@
-```{r message=FALSE, include=FALSE}
+```{r message=FALSE, include=FALSE, warning=FALSE}
 library("ISLR") 
 library("tidyverse") 
 library("ggplot2")
@@ -42,8 +42,10 @@ less_modern = less %>% filter(startYear > 1990)
 # Descriptive data analysis
 
 First, we wondered what the average rating for movies overall was, and what the distribution is like for movies made since 1990 ("modern" movies).
+
 ## Average Rating of Movies
-```{r message=FALSE}
+
+```{r echo=FALSE, message=FALSE}
 # histogram of ratings
 ggplot(less, aes(x=averageRating)) + geom_density(color="blue", fill="dodgerblue")+ggtitle("Distribution of Ratings over all time") + scale_x_continuous(name="Rating", breaks=seq(0, 10, 1))+scale_y_continuous(name="Frequency of Rating", breaks=seq(0, 0.4, 0.05))
 
@@ -52,18 +54,20 @@ ggplot(less_modern, aes(x=averageRating)) + geom_density(color="blue", fill="dod
 
 As we can see, most common ratings for movies are about 6.5. The distribution almost changed none when made to reflect more modern movies. The only visible change is a slightly more spread average rating, the peak at 6.5 lowers a bit in the modern version and that is reflected throughout the rest of the graph
 
-
 ## Ratings based on Genre
+
 We then wondered what the most and least popular genres are 
-```{r message=FALSE}
+```{r echo=FALSE, message=FALSE}
 data_genres = less %>% select(tconst, genres, averageRating) %>% separate_rows(genres, sep=",")
 # remove musicals because fuck musicals
 data_genres = data_genres%>% filter(genres!=("\\N") & genres!=("Game-Show") & genres!=("Talk-Show") & genres!=("Short")& genres!=("Reality-TV") & genres!="Music"& genres!="Musical")
 
 ggplot(data_genres, aes(averageRating)) + geom_density()+ggtitle("Distribution of Ratings by genre") + scale_x_continuous(name="Rating", breaks=seq(0, 10, 2))+facet_wrap(~genres, scales='free_y')
 ```
+
 This is what that graph looks like with a few of the main genres overlayed with each other
-```{r message=FALSE}
+
+```{r echo=FALSE, message=FALSE}
 temp = data_genres %>% filter(genres==c("Action","Comedy","Horror","Drama","Thriller","Fantasy","Crime"))
 ggplot(temp, aes(averageRating, color=genres)) + geom_density()+ggtitle("Distribution of Ratings by Genre") + scale_x_continuous(name="Rating", breaks=seq(0, 10, 2))+scale_y_continuous(name="Proportion of all ratings", breaks=seq(0, 0.5, 0.1))
 rm(temp)
@@ -71,7 +75,8 @@ rm(temp)
 From this we can learn that Horror is more disliked, and more varied in rating in general, and the most consistently liked genre is Drama. We can also conclude that the most 
 
 ### Bar Chart of Average Ratings
-```{r message=FALSE}
+
+```{r echo=FALSE, message=FALSE}
 avg = aggregate(data_genres$averageRating, list(data_genres$genres), FUN=mean)
 ggplot(avg, aes(x=x, y=Group.1, fill=Group.1)) + geom_bar(stat="identity",) + ggtitle("Average Rating of each category") + labs(x="Average Rating", y="Genre") + theme(legend.position = "none")
 rm(avg)
@@ -79,7 +84,8 @@ rm(avg)
 # Predictive Data Analysis
 
 ## Plotting Release Year Against Average Movie Rating
-```{r message=FALSE}
+
+```{r echo=FALSE, message=FALSE}
 ggplot(less, aes(x=startYear, y=averageRating)) + geom_point() + scale_x_discrete(name="Release Year", breaks=seq(1892, 2023, 10)) + scale_y_discrete(name="Average Rating")
 ```
 
@@ -88,18 +94,21 @@ This is sort of "cone shaped".This is caused by an increase in population varian
 It is possible to instead take the average of all ratings for all movies made in a given year and plot that against the year.
 
 ## Plotting Average Rating of ALL Movies for a year vs Release year
-```{r message=FALSE}
+
+```{r echo=FALSE, message=FALSE}
 avg = aggregate(less$averageRating, list(less$startYear), FUN=mean)
 avg = avg %>% drop_na(x)
 ggplot(avg, aes(x=Group.1, y=x)) + geom_point() + scale_x_discrete(name="Release Year", breaks=seq(1892, 2023, 10)) + scale_y_discrete(name="Average Rating")
 
 ```
+
 These data are a lot easier to understand.
 
 From this we can see that when movies were first tracked for ratings, they started out pretty low, then seemed to level off for about 100 years with a slight downward trend. Then recently, it seems the average has gone up at what looks like an exponential rate
 
 ## Ratings of Modern Movies over Time
-```{r}
+
+```{r echo=FALSE, message=FALSE}
 ggplot(avg %>% filter(Group.1>1989), aes(Group.1, x)) + geom_point() + scale_x_discrete(breaks=seq(1990,2023,2), name="Release Year") + labs(y="Average Movie Rating")
 ```
 
@@ -113,12 +122,12 @@ rm(avg)
 
 Of all the residuals  in the data set, these are their data
 
-```{r message=FALSE}
+```{r echo=FALSE, message=FALSE}
 model = lm(averageRating~startYear, data=less)
 summary(residuals(model))
 ```
 Now on to the R-squared values:
-```{r message=FALSE}
+```{r echo=FALSE, message=FALSE}
 show(paste('R-squared:', summary(model)$r.squared))
 show(paste('Adjusted R-squared:', summary(model)$adj.r.squared))
 rm(model)
@@ -151,7 +160,7 @@ for(ind in 1:nrow(data)){
 
 Plotting num writers/directors against rating (No correlation, but higher ratings on 0 writers)
 
-```{r include=FALSE, message=FALSE}
+```{r echo=FALSE, message=FALSE}
 numWritersData = data %>% select(averageRating, numwriters)
 gNumWritersData = numWritersData %>% group_by(numwriters)
 gSumm = gNumWritersData %>% summarise(mean_rating=mean(averageRating))
