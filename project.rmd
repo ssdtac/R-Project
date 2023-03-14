@@ -1,84 +1,84 @@
-```{r}
+```{r message=FALSE, include=FALSE}
 library("ISLR") 
 library("tidyverse") 
 library("ggplot2")
 ```
 
-First, read the dataset and clean it
+First, read the dataset and clean it.
 
-```{r echo=FALSE}
+```{r include=FALSE, message=FALSE}
 # this will have problems
 basics = read_delim("./title_basics.tsv")
 
 # so we drop incomplete rows to make it not
 basics = drop_na(basics, genres)
-```
 
-```{r echo=FALSE, message=FALSE}
-# this should not have problems
+# these should not have problems
 ratings = read_tsv("./title_ratings.tsv")
-```
-
-```{r echo=FALSE}
 crew = read_tsv("./title_crew.tsv")
 ```
 
-here for testing purposes
+Then merge data into single object and clean data based on our specifications. We want only movies with runtime over 10 minutes and under 250. This is to exclude shorts and single entries that account for multiple movies.
 
-```{r echo=FALSE}
-problems(ratings)
-```
-
-Merging Data
-
-```{r}
-data = list(basics, ratings, crew)
+```{r include=FALSE, message=FALSE}
 #good to keep dirty data to see if it made a difference
-dirty_data = reduce(data, inner_join, by = 'tconst')
-```
+dirty_data = reduce(list(basics, ratings, crew), inner_join, by = 'tconst')
 
-```{r}
-# drop NA runtime
-data = dirty_data %>% filter(runtimeMinutes > 10)
-# drop runtime under 10 min
-```
+#REMOVE UNUSED DATA NOW IT HELPS A LOT
+rm(basics, ratings, crew)
 
-Still has 900k elements, reduce to just movies
-
-```{r}
+#clean the data
+data = dirty_data %>% filter((runtimeMinutes > 10)&(runtimeMinutes!="\\N"))
 data = data %>% filter(titleType == "movie")
-```
-
-Now down to 260k elements. Still kind of large, but more usable.
-
-#Start on descriptive data analysis
-
-First, we wondered what the average rating for movies overall was
-
-```{r}
-# histogram of ratings
-ggplot(data, aes(x=averageRating)) + geom_histogram(fill="white", color="black")+ggtitle("Distribution of Ratings") + scale_x_continuous(name="rating", breaks=seq(0, 10, 1)) + scale_y_continuous(name="Number of Movies", breaks=seq(0, 200000, 20000))
-  
-```
-
-As we can see, most common ratings for movies are about 6.5
-
-Now try plotting year vs average rating (this might be for the regression model, not simple analysis.)
-```{r}
-modern_data = data %>% filter(startYear > 1990)
-```
-```{r}
 less = data %>% filter(runtimeMinutes < 250)
-less_modern = less %>% filter(startYear > 1990)
 ```
-```{r}
+
+```{r include=FALSE, message=FALSE}
+# remove comment and run lines to generate data.
+#modern_data = data %>% filter(startYear > 1990)
+#less_modern = less %>% filter(startYear > 1990)
+```
+
+# Descriptive data analysis
+
+First, we wondered what the average rating for movies overall was, and what the distribution is like for movies made since 1990 ("modern" movies).
+## Average Rating of Movies
+```{r message=FALSE}
+# histogram of ratings
+ggplot(less, aes(x=averageRating)) + geom_density(color="blue", fill="dodgerblue")+ggtitle("Distribution of Ratings over all time") + scale_x_continuous(name="Rating", breaks=seq(0, 10, 1))+scale_y_continuous(name="Frequency of Rating", breaks=seq(0, 0.4, 0.05))
+
+ggplot(less_modern, aes(x=averageRating)) + geom_density(color="blue", fill="dodgerblue")+ggtitle("Distribution of Ratings since 1990") + scale_x_continuous(name="Rating", breaks=seq(0, 10, 1))+scale_y_continuous(name="Frequency of Rating", breaks=seq(0, 0.4, 0.05))
+```
+
+As we can see, most common ratings for movies are about 6.5. The distribution almost changed none when made to reflect more modern movies. The only visible change is a slightly more spread average rating, the peak at 6.5 lowers a bit in the modern version and that is reflected throughout the rest of the graph
+
+## Ratings based on Genre
+
+```{r message=FALSE}
+#data_genres = less %>% select(tconst, genres, averageRating) %>% separate_rows(genres, sep=",")
+# remove musicals because fuck musicals
+data_genres = data_genres%>% filter(genres!=c("\\N") & genres!=("Game-Show") & genres!=("Talk-Show") & genres!=("Short")& genres!=("Reality-TV") & genres!="Music"& genres!="Musical")
+
+ggplot(data_genres, aes(averageRating)) + geom_density()+ggtitle("Distribution of Ratings by genre") + scale_x_continuous(name="Rating", breaks=seq(0, 10, 2))+facet_wrap(~genres, scales='free_y')
+```
+This is what that graph looks like with a few of the main genres overlayed with each other
+```{r message=FALSE}
+temp = data_genres %>% filter(genres==c("Action","Comedy","Horror","Drama","Thriller","Fantasy","Crime"))
+ggplot(temp, aes(averageRating, color=genres)) + geom_density()+ggtitle("Distribution of Ratings by Genre") + scale_x_continuous(name="Rating", breaks=seq(0, 10, 2))+scale_y_continuous(name="Proportion of all ratings", breaks=seq(0, 0.5, 0.1))
+rm(temp)
+```
+From this we can learn that Horror is more disliked, and more varied in rating in general, and the most consistently liked genre is Drama.
+
+
+```{r include=FALSE, message=FALSE}
 ggplot(less_modern, aes(x=startYear, y=averageRating)) + geom_point() + scale_x_discrete(name="Release Year", breaks=seq(1892, 2023, 10))
 ```
 
-As we can see, this is sort of "cone shaped" which is because of an increase in population variance over time. As times get more modern, there are simply more movies to give ratings. This causes slight problems for the progression of our analysis
-#Finding the residuals
+This is sort of "cone shaped" is because of an increase in population variance over time. As times get more modern, there are simply more movies to give ratings. This causes slight problems for the progression of our analysis
 
-```{r}
+# Finding the residuals
+
+```{r include=FALSE, message=FALSE}
 model = lm(averageRating~startYear, data=less)
 summary(model)
 ```
@@ -86,17 +86,19 @@ summary(model)
 As we can see, the adjusted R-squared value is 0.0086, which implies that plotting these 2 variables against each other has almost no predictive validity. This makes sense if you think about it, so now we will try to find something more predictably valid.
 
 Try plotting rating against runtime
-```{r}
+
+```{r include=FALSE, message=FALSE}
 ggplot(less_modern, aes(x=runtimeMinutes, y=averageRating)) + geom_point() +scale_x_discrete(breaks=seq(0,250,10))
 ```
 
-```{r message=FALSE}
+```{r include=FALSE, message=FALSE}
 model2 = lm(averageRating~runtimeMinutes, data=less_modern)
 summary(model2)
 ```
 
 Add column numwriters
-```{r}
+
+```{r include=FALSE, message=FALSE}
 for(ind in 1:nrow(data)){
   test=toString(data[ind,"writers"])
   if(test=="\\N"){
@@ -110,7 +112,8 @@ for(ind in 1:nrow(data)){
 ```
 
 Plotting num writers/directors against rating (No correlation, but higher ratings on 0 writers)
-```{r}
+
+```{r include=FALSE, message=FALSE}
 numWritersData = data %>% select(averageRating, numwriters)
 gNumWritersData = numWritersData %>% group_by(numwriters)
 gSumm = gNumWritersData %>% summarise(mean_rating=mean(averageRating))
@@ -118,8 +121,7 @@ gSumm = gNumWritersData %>% summarise(mean_rating=mean(averageRating))
 ggplot(gSumm, aes(x=numwriters,y=mean_rating)) + geom_point()+ggtitle("Ratings compared with writers") + scale_x_discrete(name="Number of Writers", breaks=seq(0, 69, 1)) + scale_y_continuous(name="Average Rating", breaks=seq(0, 10, 1))
 ```
 
-
-```{r}
+```{r include=FALSE, message=FALSE}
 test = data[,9]
 test = test %>% filter(genres != "\\N")
 
@@ -127,9 +129,6 @@ split = str_split_1(toString(test), ",")
 
 split
 ```
-```{r}
-data_genres <- data %>% select(tconst, genres) %>% separate_rows(genres, sep=",")
 
-data_genres
-```
+
 
