@@ -72,7 +72,9 @@ From this we can learn that Horror is more disliked, and more varied in rating i
 
 ### Bar Chart of Average Ratings
 ```{r message=FALSE}
-###TODO FOR CHRISTIAN
+avg = aggregate(data_genres$averageRating, list(data_genres$genres), FUN=mean)
+ggplot(avg, aes(x=x, y=Group.1, fill=Group.1)) + geom_bar(stat="identity",) + ggtitle("Average Rating of each category") + labs(x="Average Rating", y="Genre") + theme(legend.position = "none")
+rm(avg)
 ```
 # Predictive Data Analysis
 
@@ -90,6 +92,7 @@ It is possible to instead take the average of all ratings for all movies made in
 avg = aggregate(less$averageRating, list(less$startYear), FUN=mean)
 avg = avg %>% drop_na(x)
 ggplot(avg, aes(x=Group.1, y=x)) + geom_point() + scale_x_discrete(name="Release Year", breaks=seq(1892, 2023, 10)) + scale_y_discrete(name="Average Rating")
+
 ```
 These data are a lot easier to understand.
 
@@ -102,6 +105,10 @@ ggplot(avg %>% filter(Group.1>1989), aes(Group.1, x)) + geom_point() + scale_x_d
 
 You can see here that for some reason modern movies seem to be on a trend upward in terms of average rating directly following around 2020. This could be because of the small number of movies that have come out in 2023 so far, but that would not accound for the abnormally high average movie rating for 2022.
 
+```{r message=FALSE, include=FALSE}
+# cleaning memory space
+rm(avg)
+```
 ## Finding the residuals of average rating plotted against start year
 
 Of all the residuals  in the data set, these are their data
@@ -109,8 +116,6 @@ Of all the residuals  in the data set, these are their data
 ```{r message=FALSE}
 model = lm(averageRating~startYear, data=less)
 summary(residuals(model))
-
-
 ```
 Now on to the R-squared values:
 ```{r message=FALSE}
@@ -120,13 +125,13 @@ rm(model)
 
 ```
 
-As we can see, the adjusted R-squared value is 0.013, which implies that plotting these 2 variables against each other has almost no predictive validity. This makes sense if you think about it, so now we will try to find something more predictably valid.
+As we can see, the adjusted R-squared value is 0.013, which implies that plotting these 2 variables against each other has almost no predictive validity. This makes sense if you think about it, and we will use this data regardless.
 
 ## Making a Naive Prediction
 
 Using fitted values to make a prediction about the average rating of movies in the future, we can get the following graph:
 ```{r}
-autoplot(less, series="averageRating") + labs(x="Release Year", y="Average Movie Rating") + autolayer(fitted()) 
+
 ```
 
 Add column numwriters
