@@ -57,6 +57,7 @@ As we can see, most common ratings for movies are about 6.5. The distribution al
 ## Ratings based on Genre
 
 We then wondered what the most and least popular genres are 
+
 ```{r echo=FALSE, message=FALSE}
 data_genres = less %>% select(tconst, genres, averageRating) %>% separate_rows(genres, sep=",")
 # remove musicals because fuck musicals
@@ -129,7 +130,9 @@ Of all the residuals  in the data set, these are their data
 model = lm(averageRating~startYear, data=less)
 summary(residuals(model))
 ```
+
 Now on to the R-squared values:
+
 ```{r echo=FALSE, message=FALSE}
 show(paste('R-squared:', summary(model)$r.squared))
 show(paste('Adjusted R-squared:', summary(model)$adj.r.squared))
@@ -142,6 +145,7 @@ As we can see, the adjusted R-squared value is 0.013, which implies that plottin
 ## Making a Naive Prediction
 
 Using fitted values to make a prediction about the average rating of movies in the future, we can get the following graph:
+
 ```{r}
 
 ```
@@ -166,9 +170,7 @@ gNumWritersData = gNumWritersData %>% summarise(mean_rating=mean(averageRating))
 
 ggplot(gNumWritersData, aes(x=num_writers,y=mean_rating)) + geom_point()+ggtitle("Ratings compared with writers") + scale_x_discrete(name="Number of Writers", breaks=seq(0, 69, 1)) + scale_y_continuous(name="Average Rating", breaks=seq(0, 10, 1))
 ```
+
 This scatterplot shows that there seems to be no correlation between number of writers listed and rating. From around 1-10 writers, rating stays constant at about 6.0. At around 10-20 writers, a  drop followed by a weak upward trend can be seen. However, a vast majority of movies had between 1-3 writers, and very few movies listed > 10 writers. As number of writers increased, the amount of datapoints for that value decreased significantly. We believe this resulted in more random datapoints, and that this trend appears only by chance.
-
-
-
 
 
