@@ -11,6 +11,10 @@ library("ggplot2")
 
 # Descriptive and Predictive Data Analysis for Movies
 
+By: Christian Lane and Ryan Heiert 
+
+<br>
+
 To start Analysis, we got our files from the IMDB Database, which can be found at [datasets.imdbws.com](https://datasets.imdbws.com)
 
 ```{r include=FALSE, message=FALSE, warning=FALSE}
@@ -25,7 +29,7 @@ ratings = read_tsv("./title_ratings.tsv")
 crew = read_tsv("./title_crew.tsv")
 ```
 
-We got 3 different data sets, one for the movies basic info, one for ratings of movies, and one for writers of movies. After downloading we combine data into single object and clean data based on our specifications. We want only movies with runtime over 10 minutes and under 250. This is to exclude shorts and single entries that account for multiple movies.
+We got 3 different data sets, one for the movies basic info, one for ratings of movies, and one for writers of movies. After downloading we combine data into single object and clean data based on our specifications. We want only movies with runtime over 10 minutes and under 250. This is to exclude shorts and single entries that account for multiple movies (and so have an excessively long runtime).
 
 ```{r include=FALSE, message=FALSE}
 #good to keep dirty data to see if it made a difference
@@ -59,7 +63,7 @@ ggplot(less, aes(x=averageRating)) + geom_density(color="blue", fill="dodgerblue
 ggplot(less_modern, aes(x=averageRating)) + geom_density(color="blue", fill="dodgerblue")+ggtitle("Distribution of Ratings since 1990") + scale_x_continuous(name="Rating", breaks=seq(0, 10, 1))+scale_y_continuous(name="Frequency of Rating", breaks=seq(0, 0.4, 0.05))
 ```
 
-As we can see, most common ratings for movies are about 6.5. The distribution almost changed none when made to reflect more modern movies. The only visible change is a slightly more spread average rating, the peak at 6.5 lowers a bit in the modern version and that is reflected throughout the rest of the graph
+Pay close attention to the y axis scales. These distributions look almost identical but the modern movies actually have a slightly lower peak, at around the x value 6.5, which is also the most common rating.
 
 ### Ratings based on Genre
 
@@ -70,7 +74,7 @@ data_genres = less %>% select(tconst, genres, averageRating) %>% separate_rows(g
 # remove musicals because fuck musicals
 data_genres = data_genres%>% filter(genres!=("\\N") & genres!=("Game-Show") & genres!=("Talk-Show") & genres!=("Short")& genres!=("Reality-TV") & genres!="Music"& genres!="Musical")
 
-ggplot(data_genres, aes(averageRating)) + geom_density()+ggtitle("Distribution of Ratings by genre") + scale_x_continuous(name="Rating", breaks=seq(0, 10, 2))+facet_wrap(~genres, scales='free_y')
+ggplot(data_genres, aes(averageRating)) + geom_density() + ggtitle("Distribution of Ratings by genre") + scale_x_continuous(name="Rating", breaks=seq(0, 10, 2)) + facet_wrap(~genres, scales='free_y')
 ```
 
 This is what that graph looks like with a few of the main genres overlayed with each other
@@ -91,13 +95,21 @@ rm(avg)
 
 ## Linear Regression Model
 
+### Finding a Candidate
+
+We first had to decide what variables we wanted to plot against each other, and why. The first thing that we came up with was plotting release year against average movie rating during that year, to see if critics had gotten more harsh over the years. We also came up with the idea of comparing the number of writers with a movie's average rating, to see if the number of writers a movie had had an influence on the ratings it received. If a movie's rating is indicative of its quality overall, then this could point to a correlation between the quality of the movie and the number of writers, which is interesting.
+
 ### Plotting Release Year Against Average Movie Rating
 
 ```{r echo=FALSE, message=FALSE}
 ggplot(less, aes(x=startYear, y=averageRating)) + geom_point() + scale_x_discrete(name="Release Year", breaks=seq(1892, 2023, 10)) + scale_y_discrete(name="Average Rating")
 ```
 
-This is sort of "cone shaped".This is caused by an increase in population variance over time. As times get more modern, there are simply more movies to give ratings. This causes slight problems for the progression of our analysis. 
+This is sort of "cone shaped". This is indicative of heteroskedasticity, which is a problem for data analysis. It is effectively an increase in the variance of the residuals of the data set. This is caused by an increase in population variance over time. As times get more modern, there are simply more movies to give ratings, because modern conditions facilitate the development of a larger amount of ratings. This causes slight problems for the progression of our analysis. 
+
+
+<br>
+
 
 It is possible to instead take the average of all ratings for all movies made in a given year and plot that against the year.
 
@@ -106,46 +118,41 @@ It is possible to instead take the average of all ratings for all movies made in
 ```{r echo=FALSE, message=FALSE}
 avg = aggregate(less$averageRating, list(less$startYear), FUN=mean)
 avg = avg %>% drop_na(x)
-ggplot(avg, aes(x=Group.1, y=x)) + geom_point() + scale_x_discrete(name="Release Year", breaks=seq(1892, 2023, 10)) + scale_y_discrete(name="Average Rating")
-
+ggplot(avg, aes(x=Group.1, y=x)) + geom_point() + scale_x_discrete(name="Release Year", breaks=seq(1892, 2023, 10)) + scale_y_discrete(name="Average Rating") + ggtitle("Average Movie Rating by Year")
 ```
 
-These data are a lot easier to understand.
-
-From this we can see that when movies were first tracked for ratings, they started out pretty low, then seemed to level off for about 100 years with a slight downward trend. Then recently, it seems the average has gone up at what looks like an exponential rate
-
-### Ratings of Modern Movies over Time
+This averaged data set is a lot easier to understand, and from this we may be able to find a correlation. When movies were first tracked for ratings, they started out pretty low, (around the year 1900) then seemed to level off for about 100 years with a slight downward trend. Then recently, it seems the average has gone up at what looks like an exponential rate. To explore this further, Below is a graph of this data, but modernized to include only movies that were made in 1990 or sooner.
 
 ```{r echo=FALSE, message=FALSE}
-ggplot(avg %>% filter(Group.1>1989), aes(Group.1, x)) + geom_point() + scale_x_discrete(breaks=seq(1990,2023,2), name="Release Year") + labs(y="Average Movie Rating")
+ggplot(avg %>% filter(Group.1>1989), aes(Group.1, x)) + geom_point() + scale_x_discrete(breaks=seq(1990,2023,2), name="Release Year") + labs(y="Average Movie Rating", title = "Ratings of Modern Movies Over Time")
 ```
 
-You can see here that for some reason modern movies seem to be on a trend upward in terms of average rating directly following around 2020. This could be because of the small number of movies that have come out in 2023 so far, but that would not accound for the abnormally high average movie rating for 2022.
+You can see here that for some reason modern movies seem to be on a trend upward in terms of average rating directly following a low in the year 2020, the same time as the pandemic. This could be because of the small number of movies that came out in 2020, and 2023's abnormally high rating may be accounted for by the relatively small number of movies that have come out in 2023 so far. This still does not account for the abnormally high average movie rating for 2022, so it is possible we are seeing a weird trend of abnormally good movies in the modern age.
 
 ```{r message=FALSE, include=FALSE}
 # cleaning memory space
 rm(avg)
 ```
 
-### Finding the residuals of average rating plotted against start year
+### Average Rating Plotted Against Movie Release Year
 
-Of all the residuals  in the data set, these are their data
+The residuals of this data set are useful to determine whether a naive approach is an accurate predictor in this context. Of all the residuals in the data set, these are their data:
 
 ```{r echo=FALSE, message=FALSE}
 model = lm(averageRating~startYear, data=less)
 summary(residuals(model))
 ```
 
-These residuals actually say it is ok for predictive analysis. Look at what the density plot for the residuals looks like:
+They actually say it is OK for predictive analysis. The density plot for the residuals looks like:
 
 ```{r echo=FALSE, message=FALSE}
 dens = density(residuals(model))
 plot(dens, xlab="Residual value", ylab="Density", main = "Density of Residuals") 
 ```
 
-Because residuals should be normally distributed in an unbiased data set, we seem to have an ok one here.
+Because residuals should be normally distributed in an unbiased data set, we seem to have an OK distribution here.
 
-*Now on to the R-squared values:*
+Now on to the R-squared values:
 
 ```{r echo=FALSE, message=FALSE}
 show(paste('R-squared:', summary(model)$r.squared))
@@ -154,7 +161,7 @@ rm(model)
 
 ```
 
-As we can see, the adjusted R-squared value is 0.013, which implies that plotting these 2 variables against each other has almost no predictive validity. This makes sense if you think about it, release year should theoretically have nothing to do with the ratings a movie recieves.
+As we can see, the adjusted R-squared value is 0.013, which implies that plotting these 2 variables against each other has almost no predictive validity. This makes sense if you think about it, release year should theoretically have nothing to do with the ratings a movie receives.
 
 ```{r include=FALSE, message=FALSE}
 #Create summarised data including number of writers
@@ -177,6 +184,15 @@ ggplot(gNumWritersData, aes(x=num_writers,y=mean_rating)) + geom_point()+ggtitle
 
 This scatter plot shows that there seems to be no correlation between number of writers listed and rating. From around 1-10 writers, rating stays constant at about 6.0. At around 10-20 writers, a  drop followed by a weak upward trend can be seen. However, a vast majority of movies had between 1-3 writers, and very few movies listed > 10 writers. As number of writers increased, the amount of data points for that value decreased significantly. We believe this resulted in more random data points, and that this trend appears only by chance.
 
+## Conclusion
+
+Our predictive data analysis models came to multiple conclusions separately, one possibly that there is a trend in modern movies to have abnormally high ratings, another correlating the number of writers of a movie with that movie's quality. Unfortunately, not many real useful conclusions were reached following our analysis of the data.
+
+## References
+
+The only reference we have is the [IMDB Database](https://datasets.imdbws.com)
+We also used the Tidyverse and ggplot2 libraries.
 
 
-Made by Christian Lane and Ryan Heiert
+
+
