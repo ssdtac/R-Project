@@ -167,7 +167,7 @@ gWriters = gWriters %>% summarise(num_writers=n())
 gWriters = reduce(list(data,gWriters), inner_join, by='tconst')
 ```
 
-Plotting number of writers against rating
+## Plotting number of writers against rating
 
 ```{r include=FALSE, message=FALSE}
 numWritersData = gWriters %>% select(averageRating, num_writers)
