@@ -81,13 +81,11 @@ ggplot(temp, aes(averageRating, color=genres)) + geom_density()+ggtitle("Distrib
 rm(temp)
 ```
 
-From this we can learn that Horror is more disliked, and more varied in rating in general, and the most consistently liked genre is Drama. We can also conclude that the most 
-
-#### Bar Chart of Average Ratings
+From this we can learn that Horror is more disliked, and more varied in rating in general, and the most consistently liked genre is Drama. We can also conclude that the most consistently average categories are Action, Comedy, Thriller, Fantasy, and Crime.
 
 ```{r echo=FALSE, message=FALSE}
 avg = aggregate(data_genres$averageRating, list(data_genres$genres), FUN=mean)
-ggplot(avg, aes(x=x, y=Group.1, fill=Group.1)) + geom_bar(stat="identity",) + ggtitle("Average Rating of each category") + labs(x="Average Rating", y="Genre") + theme(legend.position = "none")
+ggplot(avg, aes(x=x, y=Group.1, fill=Group.1)) + geom_bar(stat="identity",) + ggtitle("Average Rating of each category") + labs(x="Average Rating", y="Genre") + theme(legend.position = "none") + scale_x_continuous(breaks=seq(0,7,0.5))
 rm(avg)
 ```
 
@@ -169,7 +167,7 @@ gWriters = reduce(list(data,gWriters), inner_join, by='tconst')
 
 ## Plotting number of writers against rating
 
-```{r include=FALSE, message=FALSE}
+```{r echo=FALSE, message=FALSE}
 numWritersData = gWriters %>% select(averageRating, num_writers)
 gNumWritersData = numWritersData %>% group_by(num_writers)
 gNumWritersData = gNumWritersData %>% summarise(mean_rating=mean(averageRating))
