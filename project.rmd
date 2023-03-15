@@ -95,29 +95,25 @@ model2 = lm(averageRating~runtimeMinutes, data=less_modern)
 summary(model2)
 ```
 
-Add column numwriters
 ```{r}
-for(ind in 1:nrow(data)){
-  test=toString(data[ind,"writers"])
-  if(test=="\\N"){
-    len=0
-  }else{
-    split1=str_split_1(test,",")
-    len=length(split1)
-  }
-  data[ind,"numwriters"]=len
-}
+#Create summarised data including number of writers
+data_writers <- data %>% select(tconst, writers) %>% separate_rows(writers, sep=",")
+
+gWriters = data_writers %>% group_by(tconst)
+gWriters = gWriters %>% summarise(num_writers=n())
+
+gWriters = reduce(list(data,gWriters), inner_join, by='tconst')
 ```
 
-Plotting num writers/directors against rating (No correlation, but higher ratings on 0 writers)
+Plotting number of writers against rating
 ```{r}
-numWritersData = data %>% select(averageRating, numwriters)
-gNumWritersData = numWritersData %>% group_by(numwriters)
-gSumm = gNumWritersData %>% summarise(mean_rating=mean(averageRating))
+numWritersData = gWriters %>% select(averageRating, num_writers)
+gNumWritersData = numWritersData %>% group_by(num_writers)
+gNumWritersData = gNumWritersData %>% summarise(mean_rating=mean(averageRating))
 
-ggplot(gSumm, aes(x=numwriters,y=mean_rating)) + geom_point()+ggtitle("Ratings compared with writers") + scale_x_discrete(name="Number of Writers", breaks=seq(0, 69, 1)) + scale_y_continuous(name="Average Rating", breaks=seq(0, 10, 1))
+ggplot(gNumWritersData, aes(x=num_writers,y=mean_rating)) + geom_point()+ggtitle("Ratings compared with writers") + scale_x_discrete(name="Number of Writers", breaks=seq(0, 69, 1)) + scale_y_continuous(name="Average Rating", breaks=seq(0, 10, 1))
 ```
-
+This scatterplot shows that there seems to be no correlation between number of writers listed and rating. From around 1-10 writers, rating stays constant at about 6.0. At around 10-20 writers, a  drop followed by a weak upward trend can be seen. However, a vast majority of movies had between 1-3 writers, and very few movies listed > 10 writers. As number of writers increased, the amount of datapoints for that value decreased significantly. We believe this resulted in more random datapoints, and that this trend appears only by chance.
 
 ```{r}
 test = data[,9]
