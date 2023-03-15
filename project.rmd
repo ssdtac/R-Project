@@ -4,7 +4,9 @@ library("tidyverse")
 library("ggplot2")
 ```
 
-First, read the dataset and clean it.
+# Descriptive and Predictive Data Analysis for Movies
+
+To start Analysis, we got our files from the IMDB Database, which can be found at [datasets.imdbws.com](https://datasets.imdbws.com)
 
 ```{r include=FALSE, message=FALSE, warning=FALSE}
 # this will have problems
@@ -18,7 +20,7 @@ ratings = read_tsv("./title_ratings.tsv")
 crew = read_tsv("./title_crew.tsv")
 ```
 
-Then merge data into single object and clean data based on our specifications. We want only movies with runtime over 10 minutes and under 250. This is to exclude shorts and single entries that account for multiple movies.
+We got 3 different data sets, one for the movies basic info, one for ratings of movies, and one for writers of movies. After downloading we combine data into single object and clean data based on our specifications. We want only movies with runtime over 10 minutes and under 250. This is to exclude shorts and single entries that account for multiple movies.
 
 ```{r include=FALSE, message=FALSE}
 #good to keep dirty data to see if it made a difference
