@@ -133,7 +133,16 @@ model = lm(averageRating~startYear, data=less)
 summary(residuals(model))
 ```
 
-Now on to the R-squared values:
+These residuals actually say it is ok for predictive analysis. Look at what the density plot for the residuals looks like:
+
+```{r echo=FALSE, message=FALSE}
+dens = density(residuals(model))
+plot(dens, xlab="Residual value", ylab="Density", main = "Density of Residuals") 
+```
+
+Because residuals should be normally distributed in an unbiased data set, we seem to have an ok one here.
+
+*Now on to the R-squared values:*
 
 ```{r echo=FALSE, message=FALSE}
 show(paste('R-squared:', summary(model)$r.squared))
