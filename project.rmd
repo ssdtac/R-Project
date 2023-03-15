@@ -67,11 +67,12 @@ ggplot(data_genres, aes(averageRating)) + geom_density()+ggtitle("Distribution o
 
 This is what that graph looks like with a few of the main genres overlayed with each other
 
-```{r echo=FALSE, message=FALSE}
+```{r echo=FALSE, message=FALSE, warning=FALSE}
 temp = data_genres %>% filter(genres==c("Action","Comedy","Horror","Drama","Thriller","Fantasy","Crime"))
 ggplot(temp, aes(averageRating, color=genres)) + geom_density()+ggtitle("Distribution of Ratings by Genre") + scale_x_continuous(name="Rating", breaks=seq(0, 10, 2))+scale_y_continuous(name="Proportion of all ratings", breaks=seq(0, 0.5, 0.1))
 rm(temp)
 ```
+
 From this we can learn that Horror is more disliked, and more varied in rating in general, and the most consistently liked genre is Drama. We can also conclude that the most 
 
 ### Bar Chart of Average Ratings
@@ -81,6 +82,7 @@ avg = aggregate(data_genres$averageRating, list(data_genres$genres), FUN=mean)
 ggplot(avg, aes(x=x, y=Group.1, fill=Group.1)) + geom_bar(stat="identity",) + ggtitle("Average Rating of each category") + labs(x="Average Rating", y="Genre") + theme(legend.position = "none")
 rm(avg)
 ```
+
 # Predictive Data Analysis
 
 ## Plotting Release Year Against Average Movie Rating
@@ -118,6 +120,7 @@ You can see here that for some reason modern movies seem to be on a trend upward
 # cleaning memory space
 rm(avg)
 ```
+
 ## Finding the residuals of average rating plotted against start year
 
 Of all the residuals  in the data set, these are their data
